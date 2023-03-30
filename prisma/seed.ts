@@ -1,14 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 const db = new PrismaClient();
 
-const seed = async () => {
-  await Promise.all(
-    getJokes().map((joke) => {
-      return db.joke.create({ data: joke });
-    })
-  );
-};
-
 const getJokes = () => {
   return [
     {
@@ -41,3 +33,12 @@ const getJokes = () => {
     },
   ];
 };
+
+const seed = async () => {
+  await Promise.all(
+    getJokes().map((joke) => {
+      return db.joke.create({ data: joke });
+    })
+  );
+};
+seed();
