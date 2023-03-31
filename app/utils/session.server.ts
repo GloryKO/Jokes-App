@@ -46,3 +46,28 @@ export async function createUserSession(userID: string, redirectTo: string) {
     },
   });
 }
+
+function getUserSession(request: Request) {
+  return storage.getSession(request.headers.get("Cookie"));
+}
+
+export async function getUserID(request: Request) {
+  const session = await getUserSession(request);
+  const userID = session.get("userID");
+  if (!userID || typeof userID !== "string") return null;
+
+  return userID;
+}
+
+export async function requireUserID(
+  request: Request,
+  redirectTo: string = new URL(request.url).pathname
+) {
+  const session = await getUserSession(request);
+  const userID = session.get("userID");
+  if (!userID || typeof userID !== "string") {
+    const searchParams = new URLSearchParams([["redirectTo", redirectTo]]);
+    throw redirect(`/login?${searchParams}`);
+  }
+  return userID;
+}
