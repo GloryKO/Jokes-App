@@ -71,3 +71,29 @@ export async function requireUserID(
   }
   return userID;
 }
+
+export async function getUser(request: Request) {
+  const userID = await getUserID(request);
+  if (typeof userID !== "string") {
+    return null;
+  }
+
+  try {
+    const user = await db.user.findUnique({
+      where: { id: userID },
+      select: { id: true, username: true },
+    });
+    return user;
+  } catch {
+    throw logout(request);
+  }
+}
+
+export async function logout(request: Request) {
+  const session = await getUserSession(request);
+  return redirect("/login", {
+    headers: {
+      "Set-Cookie": await storage.destroySession(session),
+    },
+  });
+}
