@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import stylesUrl from "~/styles/login.css";
 import { db } from "~/utils/db.server";
 import { badRequest } from "~/utils/request.server";
+import { createUserSession, login } from "~/utils/session.server";
 
 export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: stylesUrl }
@@ -59,11 +60,21 @@ export const action = async ({ request }: ActionArgs) => {
 
   switch (loginType) {
     case 'login': {
-      return badRequest({
-        fieldErrors: null,
-        fields,
-        formError: "Not implemented"
-      })
+      const user = await login({ username, password })
+      console.log({ user });
+      if (!user) {
+        return badRequest({
+          fieldErrors: null,
+          fields,
+          formError: "Username/Password combination is not correct"
+        })
+      }
+      return createUserSession(user.id, redirectTo)
+      // return badRequest({
+      //   fieldErrors: null,
+      //   fields,
+      //   formError: "Not implemented"
+      // })
     }
     case 'register': {
       const userExists = await db.user.findFirst({
